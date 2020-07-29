@@ -1,0 +1,26 @@
+# Use Sagemaker PyTorch container as base image
+# https://github.com/aws/sagemaker-pytorch-container/blob/master/docker/1.5.0/py3/Dockerfile.gpu
+FROM 763104351884.dkr.ecr.us-east-2.amazonaws.com/pytorch-training:1.5.0-gpu-py36-cu101-ubuntu16.04
+LABEL author="vadimd@amazon.com"
+
+############# Installing MMDetection from source ############
+
+WORKDIR /opt/ml/code
+RUN pip install --upgrade --force-reinstall  torch torchvision cython
+RUN pip install mmcv-full==latest+torch1.5.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+
+RUN git clone https://github.com/open-mmlab/mmdetection
+RUN cd mmdetection/ && \
+    pip install -e .
+
+# to address https://github.com/pytorch/pytorch/issues/37377
+ENV MKL_THREADING_LAYER GNU
+ENV MMDETECTION /opt/ml/code/mmdetection
+
+############# Configuring Sagemaker ##############
+COPY container_training /opt/ml/code
+
+ENV SAGEMAKER_SUBMIT_DIRECTORY /opt/ml/code
+ENV SAGEMAKER_PROGRAM mmdetection_train.py
+
+WORKDIR /
