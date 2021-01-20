@@ -1,13 +1,14 @@
 # Use Sagemaker PyTorch container as base image
-# https://github.com/aws/sagemaker-pytorch-container/blob/master/docker/1.5.0/py3/Dockerfile.gpu
-FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.5.0-gpu-py36-cu101-ubuntu16.04
+# https://github.com/aws/deep-learning-containers/blob/master/pytorch/training/docker/1.6.0/py3/cu101/Dockerfile.gpu
+FROM 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.6.0-gpu-py36-cu110-ubuntu18.04-v3.0
 LABEL author="vadimd@amazon.com"
 
-############# Installing MMDetection from source ############
+############# Installing MMDetection and its dependencies ############
 
 WORKDIR /opt/ml/code
+# updating torch and its dependecies to make it compatible with latest mmdetection & mmcv
 RUN pip install --upgrade --force-reinstall  torch torchvision cython
-RUN pip install mmcv-full==latest+torch1.6.0+cu101 -f https://download.openmmlab.com/mmcv/dist/index.html
+RUN pip install mmcv-full==1.2.5 -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html
 
 RUN git clone https://github.com/open-mmlab/mmdetection
 RUN cd mmdetection/ && \
